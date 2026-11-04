@@ -352,6 +352,8 @@ the container when it exits. The default is **false**.
 
 @@option secret
 
+@@option config
+
 @@option security-opt
 
 @@option shm-size
