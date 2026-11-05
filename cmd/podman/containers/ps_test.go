@@ -3,6 +3,7 @@ package containers
 import (
 	"bytes"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -248,6 +249,30 @@ func Test_portsToString(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := portsToString(tt.ports, tt.exposedPorts)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestPsStatusWithExitedAt(t *testing.T) {
+	tests := []struct {
+		name     string
+		state    string
+		exitedAt int64
+		exitCode int32
+		want     string
+	}{
+		{name: "zero Unix timestamp", state: "exited", exitCode: 0, want: "Exited (0) Unknown"},
+		{name: "zero time timestamp", state: "exited", exitedAt: time.Time{}.Unix(), exitCode: 137, want: "Exited (137) Unknown"},
+		{name: "stopped with zero timestamp", state: "stopped", exitCode: -1, want: "Exited (-1) Unknown"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := (psReporter{entities.ListContainer{
+				State:    tt.state,
+				ExitCode: tt.exitCode,
+				ExitedAt: tt.exitedAt,
+			}}).Status()
 			assert.Equal(t, tt.want, got)
 		})
 	}

@@ -379,8 +379,12 @@ func (l psReporter) Status() string {
 		t := units.HumanDuration(time.Since(time.Unix(l.StartedAt, 0)))
 		state = "Up " + t
 	case "exited", "stopped":
-		t := units.HumanDuration(time.Since(time.Unix(l.ExitedAt, 0)))
-		state = fmt.Sprintf("Exited (%d) %s ago", l.ExitCode, t)
+		if l.ExitedAt <= 0 {
+			state = fmt.Sprintf("Exited (%d) Unknown", l.ExitCode)
+		} else {
+			t := units.HumanDuration(time.Since(time.Unix(l.ExitedAt, 0)))
+			state = fmt.Sprintf("Exited (%d) %s ago", l.ExitCode, t)
+		}
 	default:
 		// Need to capitalize the first letter to match Docker.
 		if s := l.ListContainer.State; len(s) > 0 {
